@@ -3,6 +3,8 @@
 import os
 import sys
 
+from Bot.R2D2 import start
+
 
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TheWatcher.settings')
@@ -18,4 +20,5 @@ def main():
 
 
 if __name__ == '__main__':
+    start()
     main()

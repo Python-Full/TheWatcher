@@ -1,5 +1,27 @@
 import requests
 import datetime
+import re
+
+
+def url_check(url):
+    try:
+        site_ping = requests.head(url)
+        if site_ping.status_code < 400:
+            print(site_ping.status_code)
+            return True
+        else:
+            return False
+    except Exception:
+        return False
+
+
+regex = re.compile(
+    r'^(?:http|ftp)s?://'  # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+    r'localhost|'  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+    r'(?::\d+)?'  # optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
 class BotHandler:
@@ -59,6 +81,11 @@ def main():
 
         if last_chat_text.lower() == '/check':
             greet_bot.send_message(last_chat_id, 'What do you want to check?')
+
+        if re.match(regex, last_chat_text):
+            greet_bot.send_message(last_chat_id, url_check(last_chat_text))
+        else:
+            greet_bot.send_message(last_chat_id, 'Not valid url!')
 
         new_offset = last_update_id + 1
 
