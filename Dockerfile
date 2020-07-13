@@ -44,5 +44,5 @@ ENV GUNICORN_WORKERS 4
 ENV GUNICORN_WORKERS_CONNECTIONS 1001
 
 # Running Python Application
-CMD python manage.py startbot 0.0.0.0:8000
+CMD python manage.py startbot
 #CMD gunicorn --workers=${GUNICORN_WORKERS} config.wsgi:application -b ${GUNICORN_BIND} --log-level info

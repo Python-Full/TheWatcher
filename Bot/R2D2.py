@@ -1,12 +1,10 @@
 import re
 import threading
 import time
-from collections import namedtuple
-
 import requests
 import telebot
-from django.db import IntegrityError
 
+from django.db import IntegrityError
 from Bot.models import Client, Site
 
 bot = telebot.TeleBot('1266535504:AAFrmvuiGMrIowTsCeswknLfASwpHHLnDL0')
@@ -21,8 +19,6 @@ regex = re.compile(
 
 keyboard1 = telebot.types.ReplyKeyboardMarkup(True, True)
 keyboard1.row('Try again', 'Cancel')
-
-WebsiteStatus = namedtuple('WebsiteStatus', ['status_code', 'reason'])
 
 
 def url_check(url):
