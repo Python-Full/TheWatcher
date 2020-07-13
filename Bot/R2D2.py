@@ -5,6 +5,7 @@ from collections import namedtuple
 
 import requests
 import telebot
+from django.db import IntegrityError
 
 from Bot.models import Client, Site
 
