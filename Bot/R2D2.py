@@ -36,29 +36,36 @@ def url_check(url):
 def start(message):
     x = threading.Thread(target=site_check)
     x.start()
+
     try:
         Client.objects.create(chat_id=message.from_user.id, chat_name=message.from_user.first_name,
                               username=message.from_user.username, lastname=message.from_user.last_name)
     except IntegrityError:
         pass
+
     if message.text == '/check':
         bot.send_message(message.from_user.id,
                          'What link do you want to check?\nFull link please (http:// or https://)')
         bot.register_next_step_handler(message, link_validation)
+
     elif message.text == '/add':
         bot.send_message(message.from_user.id,
                          'What link do you want to add to check list?\nFull link please (http:// or https://)')
         bot.register_next_step_handler(message, add_link)
+
     elif message.text == '/remove':
         bot.send_message(message.from_user.id,
                          'Write link to remove from check list?\nFull link please (http:// or https://)')
         bot.register_next_step_handler(message, remove)
+
     elif message.text == '/list':
         bot.send_message(message.from_user.id,
                          'Site`s your tracking:')
         user = Client.objects.get(chat_id=message.from_user.id)
+
         for e in user.url.all():
             bot.send_message(message.from_user.id, e.url)
+
     elif message.text == '/commands':
         bot.send_message(message.from_user.id,
                          'Available commands:'
@@ -67,6 +74,7 @@ def start(message):
                          '\n/add - Add a site to your check list.'
                          '\n/remove - Remove a site from your check list.'
                          '\n/list - Show check list.')
+
     else:
         bot.send_message(message.from_user.id, 'For list of commands type /commands')
 
@@ -98,6 +106,7 @@ def retry(message):
 
 def add_link(message):
     if re.match(regex, message.text):
+
         try:
             user = Client.objects.get(chat_id=message.from_user.id)
             url = Site.objects.create(url=message.text, state=url_check(message.text))
@@ -109,6 +118,7 @@ def add_link(message):
 
 def remove(message):
     if re.match(regex, message.text):
+
         try:
             user = Client.objects.get(chat_id=message.from_user.id)
             url = Site.objects.get(url=message.text)
@@ -120,19 +130,24 @@ def remove(message):
 
 def site_check():
     while True:
+
         for item in Site.objects.all():
+
             if url_check(item.url) != item.state:
                 user_list = Client.objects.filter(url=item)
                 item.state = url_check(item.url)
                 item.save()
+
                 if item.state:
+
                     for user in user_list:
                         bot.send_message(user.chat_id, '' + item.url + ' become available')
                 else:
+
                     for user in user_list:
                         bot.send_message(user.chat_id, '' + item.url + ' unavailable')
 
-        time.sleep(1)
+        time.sleep(5)
 
 
-bot.polling(none_stop=True, interval=0)
+bot.polling(none_stop=True, interval=2)
