@@ -68,7 +68,8 @@ def start(message):
         user = Client.objects.get(chat_id=message.from_user.id)
 
         for e in user.url.all():
-            bot.send_message(message.from_user.id, '' + e.url + '  available ' + str(url_check(e.url)))
+            bot.send_message(message.from_user.id, '' + e.url + '  available ' + str(url_check(e.url)),
+                             disable_web_page_preview=True)
 
     elif message.text == '/commands':
         bot.send_message(message.from_user.id,
@@ -114,8 +115,12 @@ def add_link(message):
 
         try:
             user = Client.objects.get(chat_id=message.from_user.id)
-            url = Site.objects.create(url=message.text, state=url_check(message.text))
-            user.url.add(url)
+            if not Site.objects.filter(url=message.text).exists():
+                url = Site.objects.create(url=message.text, state=url_check(message.text))
+                user.url.add(url)
+            else:
+                url = Site.objects.get(url=message.text)
+                user.url.add(url)
             bot.send_message(message.from_user.id, 'Added to list!')
         except IntegrityError:
             bot.send_message(message.from_user.id, 'Already exists!')
