@@ -59,7 +59,7 @@ def start(message):
         bot.register_next_step_handler(message, remove)
     elif message.text == '/time':
         bot.send_message(message.from_user.id,
-                         'Enter time:\n/* Number in seconds */')
+                         'Enter time:\n/* Number in seconds from 5 to 600 */')
         bot.register_next_step_handler(message, time_change)
 
     elif message.text == '/list':
@@ -129,7 +129,10 @@ def add_link(message):
 def time_change(message):
     try:
         user = Client.objects.get(chat_id=message.from_user.id)
-        user.counter = int(message.text)
+        if 5 < int(message.text) < 600:
+            user.counter = int(message.text)
+        else:
+            user.counter = 60
         user.save()
         bot.send_message(message.from_user.id, 'Time changed to ' + str(user.counter) + 's')
     except IntegrityError:
