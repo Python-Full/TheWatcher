@@ -57,6 +57,10 @@ def start(message):
         bot.send_message(message.from_user.id,
                          'Write link to remove from check list?\nFull link please (http:// or https://)')
         bot.register_next_step_handler(message, remove)
+    elif message.text == '/time':
+        bot.send_message(message.from_user.id,
+                         'Enter time:\n/* Number in seconds */')
+        bot.register_next_step_handler(message, time_change)
 
     elif message.text == '/list':
         bot.send_message(message.from_user.id,
@@ -64,7 +68,7 @@ def start(message):
         user = Client.objects.get(chat_id=message.from_user.id)
 
         for e in user.url.all():
-            bot.send_message(message.from_user.id, e.url)
+            bot.send_message(message.from_user.id, '' + e.url + '  available ' + str(url_check(e.url)))
 
     elif message.text == '/commands':
         bot.send_message(message.from_user.id,
@@ -73,6 +77,7 @@ def start(message):
                          '\n/check - Check a site now.'
                          '\n/add - Add a site to your check list.'
                          '\n/remove - Remove a site from your check list.'
+                         '\n/time - Set offline message delay time.'
                          '\n/list - Show check list.')
 
     else:
@@ -116,6 +121,16 @@ def add_link(message):
             bot.send_message(message.from_user.id, 'Already exists!')
 
 
+def time_change(message):
+    try:
+        user = Client.objects.get(chat_id=message.from_user.id)
+        user.counter = int(message.text)
+        user.save()
+        bot.send_message(message.from_user.id, 'Time changed to ' + str(user.counter) + 's')
+    except IntegrityError:
+        bot.send_message(message.from_user.id, 'Error changing time!')
+
+
 def remove(message):
     if re.match(regex, message.text):
 
@@ -135,17 +150,22 @@ def site_check():
 
             if url_check(item.url) != item.state:
                 user_list = Client.objects.filter(url=item)
+
+                max_count = 0
+                for user in user_list:
+                    if user.counter > max_count:
+                        max_count = user.counter
+
+                state_count = 0
+                for i in range(max_count):
+                    if url_check(item.url) != item.state:
+                        state_count = state_count + 1
+                        for user in user_list:
+                            if url_check(item.url) != item.state and state_count == user.counter:
+                                bot.send_message(user.chat_id, '' + item.url + ' available' + url_check(item.url))
+                        time.sleep(1)
                 item.state = url_check(item.url)
                 item.save()
-
-                if item.state:
-
-                    for user in user_list:
-                        bot.send_message(user.chat_id, '' + item.url + ' become available')
-                else:
-
-                    for user in user_list:
-                        bot.send_message(user.chat_id, '' + item.url + ' unavailable')
 
         time.sleep(5)
 

@@ -13,3 +13,4 @@ class Client(models.Model):
     username = models.CharField(max_length=199, null=True)
     lastname = models.CharField(max_length=199, null=True)
     url = models.ManyToManyField(Site, related_name='urls', blank=True)
+    counter = models.IntegerField(default=1)
