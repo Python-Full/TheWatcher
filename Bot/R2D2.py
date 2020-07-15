@@ -170,7 +170,8 @@ def site_check():
                         state_count = state_count + 1
                         for user in user_list:
                             if url_check(item.url) != item.state and state_count == user.counter:
-                                bot.send_message(user.chat_id, '' + item.url + ' available' + url_check(item.url))
+                                bot.send_message(user.chat_id,
+                                                 '' + str(item.url) + ' available' + str(url_check(item.url)))
                         time.sleep(1)
                 item.state = url_check(item.url)
                 item.save()
