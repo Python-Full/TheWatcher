@@ -5,6 +5,8 @@ import requests
 import telebot
 
 from django.db import IntegrityError
+from django.utils.timezone import now
+
 from Bot.models import Client, Site
 
 bot = telebot.TeleBot('1266535504:AAFrmvuiGMrIowTsCeswknLfASwpHHLnDL0')
@@ -147,6 +149,7 @@ def remove(message):
             url = Site.objects.get(url=message.text)
             user.url.remove(url)
             bot.send_message(message.from_user.id, 'Deleted from list!')
+
         except IntegrityError:
             bot.send_message(message.from_user.id, 'Already deleted!')
 
@@ -155,28 +158,38 @@ def site_check():
     while True:
 
         for item in Site.objects.all():
-
-            if url_check(item.url) != item.state:
-                user_list = Client.objects.filter(url=item)
-
-                max_count = 0
-                for user in user_list:
-                    if user.counter > max_count:
-                        max_count = user.counter
-
-                state_count = 0
-                for i in range(max_count):
-                    if url_check(item.url) != item.state:
-                        state_count = state_count + 1
-                        for user in user_list:
-                            if url_check(item.url) != item.state and state_count == user.counter:
-                                bot.send_message(user.chat_id,
-                                                 '' + str(item.url) + ' available' + str(url_check(item.url)))
-                        time.sleep(1)
-                item.state = url_check(item.url)
+            if url_check(item.url) != item.state and item.checking is False:
+                item.checking = True
+                item.last_check = now()
                 item.save()
+                check_stage_1(item)
+                time.sleep(5)
 
-        time.sleep(5)
+
+def check_stage_1(item):
+    current = url_check(item.url)
+    if current != item.state:
+        print(item.url)
+        check_stage_2(item)
+
+
+def check_stage_2(item):
+    user_list = Client.objects.filter(url=item).only('chat_id', 'counter')
+
+    while user_list.count() != 0:
+        check = url_check(item.url)
+
+        if check != item.state:
+            for user in user_list:
+
+                if (now() - item.last_check).total_seconds() > user.counter or check:
+                    bot.send_message(user.chat_id,
+                                     '' + str(item.url) + ' available ' + str(check))
+                    user_list = user_list.exclude(chat_id=user.chat_id)
+
+    item.state = url_check(item.url)
+    item.checking = False
+    item.save()
 
 
 bot.polling(none_stop=True, interval=2)
