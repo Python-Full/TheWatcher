@@ -65,7 +65,6 @@ async def get_status_code(session: aiohttp.ClientSession, url):
     except:
         status = False
 
-    print(url.url, status)
     if status != url.state and url.checking is False:
         url.checking = True
         url.last_check = now()
