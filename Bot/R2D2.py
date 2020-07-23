@@ -49,17 +49,19 @@ sem = asyncio.Semaphore(200)
 
 async def get_status_code(session: aiohttp.ClientSession, url):
     try:
-        # A HEAD request is quicker than a GET request
-        resp = await session.head(url.url, allow_redirects=True, ssl=False, headers=HEADERS)
-        async with resp:
-            status = resp.status
+        async with sem:
+            # A HEAD request is quicker than a GET request
+            resp = await session.head(url.url, allow_redirects=True, ssl=False, headers=HEADERS)
+            async with resp:
+                status = resp.status
 
-        if status == 405:
-            # HEAD request not allowed, fall back on GET
-            await session.get(
-                url.url, allow_redirects=True, ssl=False, headers=HEADERS)
+            if status == 405:
+                # HEAD request not allowed, fall back on GET
+                await session.get(
+                    url.url, allow_redirects=True, ssl=False, headers=HEADERS)
 
         status = True
+
     except:
         status = False
 
@@ -82,9 +84,8 @@ async def get_status_codes(loop: asyncio.events.AbstractEventLoop,
 
 
 def check_stage_1(item):
-    current = url_check(item.url)
-    if current != item.state:
-        print(item.url)
+    if url_check(item.url) != item.state:
+        print('Checking', item.url)
         check_stage_2(item)
 
 
@@ -107,10 +108,17 @@ def check_stage_2(item):
     item.save()
 
 
-def poll_urls():
+def poll_urls(loop: asyncio.AbstractEventLoop) -> None:
     print("Started polling")
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(get_status_codes(loop, 20))
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+
+loop = asyncio.new_event_loop()
+t = threading.Thread(target=poll_urls, args=(loop,), daemon=True)
+t.start()
+
+asyncio.run_coroutine_threadsafe(get_status_codes(loop, 20), loop)
 
 
 @bot.message_handler(content_types=['text'])
@@ -161,9 +169,6 @@ def start(message):
 
     else:
         bot.send_message(message.from_user.id, 'For list of commands type /commands')
-
-
-threading.Thread(target=poll_urls()).start()
 
 
 def link_validation(message):
