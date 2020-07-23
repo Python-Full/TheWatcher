@@ -70,7 +70,7 @@ async def get_status_code(session: aiohttp.ClientSession, url):
         url.checking = True
         url.last_check = now()
         url.save(force_update=True)
-        check_stage_1(url)
+        await check_stage_1(url)
 
 
 async def get_status_codes(loop: asyncio.events.AbstractEventLoop,
@@ -83,13 +83,13 @@ async def get_status_codes(loop: asyncio.events.AbstractEventLoop,
             await asyncio.gather(*(get_status_code(session, url) for url in Site.objects.all()))
 
 
-def check_stage_1(item):
+async def check_stage_1(item):
     if url_check(item.url) != item.state:
         print('Checking', item.url)
-        check_stage_2(item)
+        await check_stage_2(item)
 
 
-def check_stage_2(item):
+async def check_stage_2(item):
     user_list = Client.objects.filter(url=item).only('chat_id', 'counter')
 
     while user_list.count() != 0:
