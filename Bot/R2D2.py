@@ -131,7 +131,7 @@ def add_link(message):
 def time_change(message):
     try:
         user = Client.objects.get(chat_id=message.from_user.id)
-        if 5 < int(message.text) < 600:
+        if 4 < int(message.text) < 601:
             user.counter = int(message.text)
         else:
             user.counter = 60
@@ -157,13 +157,13 @@ def remove(message):
 def site_check():
     while True:
 
-        for item in Site.objects.all():
+        for item in Site.objects.all().iterator():
             if url_check(item.url) != item.state and item.checking is False:
                 item.checking = True
                 item.last_check = now()
-                item.save()
+                item.save(force_update=True)
                 check_stage_1(item)
-                time.sleep(5)
+                time.sleep(4)
 
 
 def check_stage_1(item):
