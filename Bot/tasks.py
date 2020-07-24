@@ -8,14 +8,13 @@ from TheWatcher.celery import app
 
 @app.task
 def pool():
-    while True:
-        for item in Site.objects.all():
-            if url_check(item.url) != item.state and item.checking is False:
-                item.checking = True
-                item.last_check = now()
-                item.save(force_update=True)
-                print("1")
-                check_stage_1.delay(item)
+    for item in Site.objects.all():
+        if url_check(item.url) != item.state and item.checking is False:
+            item.checking = True
+            item.last_check = now()
+            item.save(force_update=True)
+            print("1")
+            check_stage_1.delay(item)
 
 
 @app.task
@@ -49,7 +48,7 @@ def check_stage_2(item):
 
                 if (now() - item.last_check).total_seconds() > user.counter or check:
                     bot.send_message(user.chat_id,
-                                  '' + str(item.url) + ' available ' + str(check))
+                                     '' + str(item.url) + ' available ' + str(check))
                     user_list = user_list.exclude(chat_id=user.chat_id)
 
     item.state = url_check(item.url)
