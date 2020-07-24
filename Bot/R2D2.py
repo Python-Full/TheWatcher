@@ -2,6 +2,7 @@ import re
 
 import requests
 import telebot
+from django.core.paginator import Paginator
 
 from django.db import IntegrityError
 from .tasks import pool
@@ -34,7 +35,8 @@ def url_check(url):
 
 @bot.message_handler(content_types=['text'])
 def start(message):
-    pool.delay()
+    for i in Site.objects.all():
+        pool.delay(i)
     try:
         Client.objects.create(chat_id=message.from_user.id, chat_name=message.from_user.first_name,
                               username=message.from_user.username, lastname=message.from_user.last_name)

@@ -7,20 +7,20 @@ from TheWatcher.celery import app
 
 
 @app.task
-def pool():
-    for item in Site.objects.all():
-        if url_check(item.url) != item.state and item.checking is False:
-            item.checking = True
-            item.last_check = now()
-            item.save(force_update=True)
-            print("1")
-            check_stage_1.delay(item)
+def pool(item):
+    if url_check(item.url) != item.state and item.checking is False:
+        item.checking = True
+        item.last_check = now()
+        item.save(force_update=True)
+        print("1")
+        check_stage_1.delay(item)
 
 
 @app.task
 def url_check(url):
     try:
-        site_ping = requests.head(url)
+        connect_timeout, read_timeout = 5.0, 30.0
+        site_ping = requests.head(url, timeout=(connect_timeout, read_timeout))
         if site_ping.status_code < 400:
             return True
         else:
