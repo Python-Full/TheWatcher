@@ -150,4 +150,4 @@ def remove(message):
             bot.send_message(message.from_user.id, 'Already deleted!')
 
 
-bot.polling(none_stop=True, interval=2)
+bot.polling(none_stop=True, interval=5)
