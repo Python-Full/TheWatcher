@@ -138,3 +138,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# CELERY STUFF
+BROKER_URL = 'redis://192.168.88.97:6379'
+CELERY_BROKER_URL = 'redis://192.168.88.97:6379'
+CELERY_RESULT_BACKEND = 'redis://192.168.88.97:6379'
+CELERY_ACCEPT_CONTENT = ['pickle']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_TIMEZONE = 'UTC'
+CELERY_IMPORTS = ("Bot.tasks", )

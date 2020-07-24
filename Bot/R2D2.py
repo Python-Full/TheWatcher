@@ -1,15 +1,10 @@
 import re
-import threading
 
 import requests
 import telebot
-import asyncio
-
-import aiohttp
 
 from django.db import IntegrityError
-from django.utils.timezone import now
-
+from .tasks import pool
 from Bot.models import Client, Site
 
 bot = telebot.TeleBot('1266535504:AAFrmvuiGMrIowTsCeswknLfASwpHHLnDL0')
@@ -37,91 +32,9 @@ def url_check(url):
         return False
 
 
-# Using a non-default user-agent seems to avoid lots of 403 (Forbidden) errors
-HEADERS = {
-    'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) '
-                   'AppleWebKit/537.36 (KHTML, like Gecko) '
-                   'Chrome/45.0.2454.101 Safari/537.36'),
-}
-
-sem = asyncio.Semaphore(200)
-
-
-async def get_status_code(session: aiohttp.ClientSession, url):
-    try:
-        async with sem:
-            # A HEAD request is quicker than a GET request
-            resp = await session.head(url.url, allow_redirects=True, ssl=False, headers=HEADERS)
-            async with resp:
-                status = resp.status
-
-            if status == 405:
-                # HEAD request not allowed, fall back on GET
-                await session.get(
-                    url.url, allow_redirects=True, ssl=False, headers=HEADERS)
-
-        status = True
-
-    except:
-        status = False
-
-    if status != url.state and url.checking is False:
-        url.checking = True
-        url.last_check = now()
-        url.save(force_update=True)
-        await check_stage_1(url)
-
-
-async def get_status_codes(loop: asyncio.events.AbstractEventLoop,
-                           timeout: int):
-    conn = aiohttp.TCPConnector(limit=1000, ttl_dns_cache=300)
-    client_timeout = aiohttp.ClientTimeout(connect=timeout)
-    async with aiohttp.ClientSession(
-            loop=loop, timeout=client_timeout, connector=conn) as session:
-        while True:
-            await asyncio.gather(*(get_status_code(session, url) for url in Site.objects.all()))
-
-
-async def check_stage_1(item):
-    if url_check(item.url) != item.state:
-        print('Checking', item.url)
-        await check_stage_2(item)
-
-
-async def check_stage_2(item):
-    user_list = Client.objects.filter(url=item).only('chat_id', 'counter')
-
-    while user_list.count() != 0:
-        check = url_check(item.url)
-
-        if check != item.state:
-            for user in user_list:
-
-                if (now() - item.last_check).total_seconds() > user.counter or check:
-                    bot.send_message(user.chat_id,
-                                     '' + str(item.url) + ' available ' + str(check))
-                    user_list = user_list.exclude(chat_id=user.chat_id)
-
-    item.state = url_check(item.url)
-    item.checking = False
-    item.save()
-
-
-def poll_urls(loop: asyncio.AbstractEventLoop) -> None:
-    print("Started polling")
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
-
-
-loop = asyncio.new_event_loop()
-t = threading.Thread(target=poll_urls, args=(loop,), daemon=True)
-t.start()
-
-asyncio.run_coroutine_threadsafe(get_status_codes(loop, 20), loop)
-
-
 @bot.message_handler(content_types=['text'])
 def start(message):
+    pool.delay()
     try:
         Client.objects.create(chat_id=message.from_user.id, chat_name=message.from_user.first_name,
                               username=message.from_user.username, lastname=message.from_user.last_name)
