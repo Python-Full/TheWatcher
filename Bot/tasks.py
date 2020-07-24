@@ -1,3 +1,5 @@
+import time
+
 import requests
 import telebot
 from django.utils.timezone import now
@@ -7,8 +9,21 @@ from TheWatcher.celery import app
 
 
 @app.task
-def pool(item):
-    if url_check(item.url) != item.state and item.checking is False:
+def pool(i):
+    item = Site.objects.get(pk=i)
+    try:
+        connect_timeout, read_timeout = 5.0, 30.0
+        site_ping = requests.head(item.url, timeout=(connect_timeout, read_timeout))
+        if site_ping.status_code < 400:
+            state = True
+        else:
+            state = False
+    except Exception:
+        state = False
+
+    time.sleep(1)
+    print(item.url, state, item.state)
+    if state != item.state:
         item.checking = True
         item.last_check = now()
         item.save(force_update=True)
@@ -16,7 +31,6 @@ def pool(item):
         check_stage_1.delay(item)
 
 
-@app.task
 def url_check(url):
     try:
         connect_timeout, read_timeout = 5.0, 30.0
