@@ -1,11 +1,12 @@
+import json
 import re
 
 import requests
 import telebot
-from django.core.paginator import Paginator
 
 from django.db import IntegrityError
-from .tasks import pool
+from django_celery_beat.models import PeriodicTask, IntervalSchedule
+
 from Bot.models import Client, Site
 
 bot = telebot.TeleBot('1266535504:AAFrmvuiGMrIowTsCeswknLfASwpHHLnDL0')
@@ -119,6 +120,13 @@ def add_link(message):
             else:
                 url = Site.objects.get(url=message.text)
                 user.url.add(url)
+            schedule = IntervalSchedule.objects.filter().first()
+            PeriodicTask.objects.create(
+                interval=schedule,  # we created this above
+                name='Site pool'+str(url.id),  # simply describes this periodic task.
+                task='Bot.tasks.pool',  # name of task.
+                args=json.dumps([url.id]),
+            )
             bot.send_message(message.from_user.id, 'Added to list!')
         except IntegrityError:
             bot.send_message(message.from_user.id, 'Already exists!')

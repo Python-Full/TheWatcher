@@ -22,12 +22,10 @@ def pool(i):
         state = False
 
     time.sleep(1)
-    print(item.url, state, item.state)
     if state != item.state:
         item.checking = True
         item.last_check = now()
         item.save(force_update=True)
-        print("1")
         check_stage_1.delay(item)
 
 

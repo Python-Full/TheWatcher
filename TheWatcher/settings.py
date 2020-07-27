@@ -23,7 +23,7 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 SECRET_KEY = 'rgi!@3z^t5qe@!x)r5k=m$die%42kas&5ju&9kqm)c&bfoo@25'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -144,4 +144,5 @@ CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_TIMEZONE = 'UTC'
 CELERY_IMPORTS = ("Bot.tasks",)
-CELERYD_MAX_TASKS_PER_CHILD = 1
+CELERYD_MAX_TASKS_PER_CHILD = 10
+CELERY_IGNORE_RESULT = True
