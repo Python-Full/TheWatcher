@@ -1,48 +1,19 @@
-FROM python:3.8.3-slim
+FROM python:3-alpine
 
-# Install missing libs
-RUN apt-get  update \
-    && apt-get install -y  curl libpq-dev gcc python3-cffi git && \
-apt-get clean autoclean && \
-apt-get autoremove --purge -y && \
-rm -rf /var/lib/apt/lists/* && \
-rm -f /var/cache/apt/archives/*.deb
+# Install dependencies required for psycopg2 python package
+RUN apk update && apk add libpq
+RUN apk update && apk add --virtual .build-deps gcc python3-dev musl-dev postgresql-dev redis
 
-# Creating Application Source Code Directory
-RUN mkdir -p /usr/app
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+COPY . .
+RUN mv wait-for /bin/wait-for
 
-# Setting Home Directory for containers
-WORKDIR /usr/app
-
-# Installing python dependencies
-COPY requirements.txt /usr/app
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install gunicorn
-
-# Cleanup
-RUN rm -rf /var/lib/apt/lists/*
-RUN rm -rf /root/.cache/*
-RUN rm -rf /tmp/*
-RUN apt-get -y autoremove --purge && apt-get -y autoclean && apt-get -y clean
-RUN rm -rf /usr/share/man/*
-RUN rm -rf /usr/share/doc/*
-RUN find /var/lib/apt -type f | xargs rm -f
-RUN find /var/cache -type f -exec rm -rf {} \;
-RUN find /var/log -type f | while read f; do echo -ne '' > $f; done;
-
-# Copying src code to Container
-COPY . /usr/app
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Exposing Ports
-EXPOSE 8000
+# Remove dependencies only required for psycopg2 build
+RUN apk del .build-deps
 
-# Environemnt variables
-ENV DJANGO_ENV  development
-ENV GUNICORN_BIND  0.0.0.0:8000
-ENV GUNICORN_WORKERS 1
-ENV GUNICORN_WORKERS_CONNECTIONS 1001
+EXPOSE 8088
 
-# Running Python Application
-CMD python manage.py makemigrations & python manage.py migrate & python manage.py startbot
-#CMD gunicorn --workers=${GUNICORN_WORKERS} config.wsgi:application -b ${GUNICORN_BIND} --log-level info
+CMD ["python3", "manage.py startbot", "0:8088"]
