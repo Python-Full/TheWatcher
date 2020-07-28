@@ -12,10 +12,10 @@ from TheWatcher.celery import app
 def pool(i):
     item = Site.objects.get(pk=i)
     try:
-        connect_timeout, read_timeout = 5.0, 30.0
-        s = requests.session()
-        s.verify = False
-        site_ping = s.head(item.url, timeout=(connect_timeout, read_timeout))
+        connect_timeout, read_timeout = 5.0, 10.0
+        with requests.session() as s:
+            s.verify = False
+            site_ping = s.head(item.url, timeout=(connect_timeout, read_timeout))
         if site_ping.status_code < 400:
             state = True
         else:
@@ -23,7 +23,6 @@ def pool(i):
     except Exception:
         state = False
 
-    time.sleep(1)
     if state != item.state:
         item.checking = True
         item.last_check = now()
