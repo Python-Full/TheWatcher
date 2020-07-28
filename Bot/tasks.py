@@ -13,7 +13,9 @@ def pool(i):
     item = Site.objects.get(pk=i)
     try:
         connect_timeout, read_timeout = 5.0, 30.0
-        site_ping = requests.head(item.url, timeout=(connect_timeout, read_timeout))
+        s = requests.session()
+        s.verify = False
+        site_ping = s.head(item.url, timeout=(connect_timeout, read_timeout))
         if site_ping.status_code < 400:
             state = True
         else:
