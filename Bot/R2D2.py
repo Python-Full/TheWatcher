@@ -123,7 +123,7 @@ def add_link(message):
             schedule = IntervalSchedule.objects.filter().first()
             PeriodicTask.objects.create(
                 interval=schedule,  # we created this above
-                name='Site pool'+str(url.id),  # simply describes this periodic task.
+                name='Site pool' + str(url.id),  # simply describes this periodic task.
                 task='Bot.tasks.pool',  # name of task.
                 args=json.dumps([url.id]),
             )
@@ -152,6 +152,7 @@ def remove(message):
             user = Client.objects.get(chat_id=message.from_user.id)
             url = Site.objects.get(url=message.text)
             user.url.remove(url)
+            PeriodicTask.objects.get(args='[' + str(url.id) + ']').delete()
             bot.send_message(message.from_user.id, 'Deleted from list!')
 
         except IntegrityError:

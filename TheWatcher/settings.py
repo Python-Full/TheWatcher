@@ -92,7 +92,7 @@ DATABASES = {
 
         'PASSWORD': 'qwe123',
 
-        'HOST': '192.168.88.97',
+        'HOST': 'localhost',
 
         'PORT': '5432',
 
@@ -136,9 +136,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # CELERY STUFF
-BROKER_URL = 'redis://192.168.88.97:6379'
-CELERY_BROKER_URL = 'redis://192.168.88.97:6379'
-CELERY_RESULT_BACKEND = 'redis://192.168.88.97:6379'
+BROKER_URL = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['pickle']
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'

@@ -2,7 +2,8 @@ FROM python:3-alpine
 
 # Install dependencies required for psycopg2 python package
 RUN apk update && apk add libpq
-RUN apk update && apk add --virtual .build-deps gcc python3-dev musl-dev postgresql-dev redis
+RUN apk update && apk add --virtual .build-deps gcc python3-dev musl-dev postgresql-dev
+RUN apk add redis-server
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
