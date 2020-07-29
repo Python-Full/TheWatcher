@@ -3,6 +3,7 @@ version: '3.4'
 services:
 
   db:
+    command: -p 5532
     hostname: postgres
     image: postgres:latest
     environment:
@@ -10,9 +11,9 @@ services:
       - POSTGRES_PASSWORD=qwe123
       - POSTGRES_DB=watcher
     ports:
-      - "5432:5432"
+      - "5532:5532"
     expose:
-      - "5432"
+      - "5532"
     restart: on-failure
     volumes:
       - postgresql-data:/var/lib/postgresql/data

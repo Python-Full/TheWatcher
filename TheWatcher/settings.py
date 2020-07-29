@@ -94,7 +94,7 @@ DATABASES = {
 
         'HOST': 'db',
 
-        'PORT': '5432',
+        'PORT': '5532',
 
     }
 }
