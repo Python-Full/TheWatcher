@@ -2,16 +2,13 @@ version: '3.4'
 
 services:
 
-  postgres:
-    container_name: postgres
+  db:
     hostname: postgres
     image: postgres:latest
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=qwe123
       - POSTGRES_DB=watcher
-    networks:
-      - main
     ports:
       - "5432:5432"
     restart: on-failure
@@ -20,120 +17,99 @@ services:
 
   app:
     build: .
-#    command: sh -c "wait-for postgres:5432 && python manage.py && python manage.py migrate && python manage.py startbot 0.0.0.0:8088"
-    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py startbot 0.0.0.0:8088"
-    container_name: app
+    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py migrate django_celery_beat && python manage.py startbot 0.0.0.0:8088"
     depends_on:
-      - postgres
-#      - rabbitmq
+      - db
     expose:
       - "8088"
     hostname: app
     image: app-image
-    networks:
-      - main
     restart: on-failure
 
   redis:
-    depends_on:
-      - app
-    hostname: redis-server
-    image: redis:latest
-    networks:
-      - main
-    restart: on-failure
+    image: "redis:alpine"
+    command: redis-server --protected-mode no
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master
 
   celery_worker1:
-#    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
+    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk1"
     depends_on:
       - app
-      - postgres
-#      - rabbitmq
+      - db
+    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
     image: app-image
-    networks:
-      - main
     restart: on-failure
 
   celery_worker2:
-#    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
+    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk2"
     depends_on:
       - app
-      - postgres
-#      - rabbitmq
+      - db
+    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
     image: app-image
-    networks:
-      - main
     restart: on-failure
 
   celery_worker3:
-#    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
+    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk3"
     depends_on:
       - app
-      - postgres
-#      - rabbitmq
+      - db
+    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
     image: app-image
-    networks:
-      - main
     restart: on-failure
 
   celery_worker4:
-#    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
+    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk4"
     depends_on:
       - app
-      - postgres
-#      - rabbitmq
+      - db
+    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
     image: app-image
-    networks:
-      - main
     restart: on-failure
 
   celery_worker5:
-#    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
+    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk5"
     depends_on:
       - app
-      - postgres
-#      - rabbitmq
+      - db
+    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
     image: app-image
-    networks:
-      - main
     restart: on-failure
 
   celery_beat:
-#    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher beat -S django
+    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher beat -S django
     command: sh -c "celery -A TheWatcher beat -S django"
-    container_name: celery_beat
     depends_on:
       - app
-      - postgres
-#      - rabbitmq
+      - db
+    #      - rabbitmq
     hostname: celery_beat
     image: app-image
-    networks:
-      - main
     restart: on-failure
 
-networks:
-  main:
 
 volumes:
   postgresql-data:
