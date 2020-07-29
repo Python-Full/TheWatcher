@@ -39,12 +39,10 @@ services:
       - REDIS_REPLICATION_MODE=master
 
   celery_worker1:
-    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk1"
     depends_on:
       - app
       - db
-    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
@@ -52,12 +50,10 @@ services:
     restart: on-failure
 
   celery_worker2:
-    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk2"
     depends_on:
       - app
       - db
-    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
@@ -65,12 +61,10 @@ services:
     restart: on-failure
 
   celery_worker3:
-    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk3"
     depends_on:
       - app
       - db
-    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
@@ -78,12 +72,10 @@ services:
     restart: on-failure
 
   celery_worker4:
-    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk4"
     depends_on:
       - app
       - db
-    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
@@ -91,12 +83,10 @@ services:
     restart: on-failure
 
   celery_worker5:
-    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher worker -c 10"
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk5"
     depends_on:
       - app
       - db
-    #      - rabbitmq
     environment:
       - C_FORCE_ROOT=true
     hostname: celery_worker
@@ -104,12 +94,10 @@ services:
     restart: on-failure
 
   celery_beat:
-    #    command: sh -c "wait-for rabbitmq:5672 && wait-for app:8088 -- celery -A TheWatcher beat -S django
     command: sh -c "celery -A TheWatcher beat -S django"
     depends_on:
       - app
       - db
-    #      - rabbitmq
     hostname: celery_beat
     image: app-image
     restart: on-failure
