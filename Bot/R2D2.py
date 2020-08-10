@@ -120,7 +120,7 @@ def add_link(message):
             else:
                 url = Site.objects.get(url=message.text)
                 user.url.add(url)
-            schedule = IntervalSchedule.objects.get_or_create(
+            schedule, _ = IntervalSchedule.objects.get_or_create(
                 every=15,
                 period=IntervalSchedule.SECONDS
             )
