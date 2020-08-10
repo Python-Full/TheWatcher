@@ -128,7 +128,7 @@ def add_link(message):
                 interval=schedule,  # we created this above
                 name='Site pool' + str(url.id),  # simply describes this periodic task.
                 task='Bot.tasks.pool',  # name of task.
-                args=json.dumps([url.id]),
+                args='[\"{}\"]'.format(url.id),
             )
             bot.send_message(message.from_user.id, 'Added to list!')
         except IntegrityError:
