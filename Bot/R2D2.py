@@ -120,7 +120,10 @@ def add_link(message):
             else:
                 url = Site.objects.get(url=message.text)
                 user.url.add(url)
-            schedule = IntervalSchedule.objects.filter().first()
+            schedule = IntervalSchedule.objects.get_or_create(
+                every=15,
+                period=IntervalSchedule.SECONDS
+            )
             PeriodicTask.objects.create(
                 interval=schedule,  # we created this above
                 name='Site pool' + str(url.id),  # simply describes this periodic task.
