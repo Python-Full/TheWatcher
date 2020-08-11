@@ -2,42 +2,42 @@ version: '3.4'
 
 services:
 
-  db:
-    command: -p 5532
-    hostname: postgres
-    image: postgres:latest
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=qwe123
-      - POSTGRES_DB=watcher
-    ports:
-      - "5532:5532"
-    expose:
-      - "5532"
-    restart: on-failure
-    volumes:
-      - postgresql-data:/var/lib/postgresql/data
+#  db:
+#    command: -p 5532
+#    hostname: postgres
+#    image: postgres:latest
+#    environment:
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=qwe123
+#      - POSTGRES_DB=watcher
+#    ports:
+#      - "5532:5532"
+#    expose:
+#      - "5532"
+#    restart: on-failure
+#    volumes:
+#      - postgresql-data:/var/lib/postgresql/data
 
   app:
     build: .
-    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py migrate django_celery_beat && python manage.py startbot 0.0.0.0:8088"
+    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py migrate django_celery_beat && python manage.py startbot 0.0.0.0:8078"
     depends_on:
       - db
     expose:
-      - "8088"
+      - "8078"
     hostname: app
     image: app-image
     restart: on-failure
 
-  redis:
-    image: "redis:alpine"
-    command: redis-server --protected-mode no
-    ports:
-      - "6379:6379"
-    expose:
-      - "6379"
-    environment:
-      - REDIS_REPLICATION_MODE=master
+#  redis:
+#    image: "redis:alpine"
+#    command: redis-server --protected-mode no
+#    ports:
+#      - "6379:6379"
+#    expose:
+#      - "6379"
+#    environment:
+#      - REDIS_REPLICATION_MODE=master
 
   celery_worker1:
     command: sh -c "celery -A TheWatcher worker -c 10 -n wrk1"

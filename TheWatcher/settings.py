@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from env import *
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
@@ -20,7 +22,7 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'rgi!@3z^t5qe@!x)r5k=m$die%42kas&5ju&9kqm)c&bfoo@25'
+SECRET_KEY = SECRET
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -86,15 +88,15 @@ DATABASES = {
 
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 
-        'NAME': 'watcher',
+        'NAME': DATABASE_NAME,
 
-        'USER': 'postgres',
+        'USER': DATABASE_USER,
 
-        'PASSWORD': 'qwe123',
+        'PASSWORD': DATABASE_PASSWORD,
 
-        'HOST': 'db',
+        'HOST': DATABASE_HOST,
 
-        'PORT': '5532',
+        'PORT': DATABASE_PORT,
 
     }
 }
@@ -136,9 +138,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # CELERY STUFF
-BROKER_URL = 'redis://redis:6379'
-CELERY_BROKER_URL = 'redis://redis:6379'
-CELERY_RESULT_BACKEND = 'redis://redis:6379'
+BROKER_URL = BROKER_RABBIT_URL
+CELERY_BROKER_URL = BROKER_RABBIT_URL
+CELERY_RESULT_BACKEND = BROKER_RABBIT_URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

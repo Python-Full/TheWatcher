@@ -14,7 +14,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN apk del .build-deps
 
 EXPOSE 8088
-EXPOSE 6379
-EXPOSE 5532
 
-CMD ["python3", "manage.py startbot", "0:8088"]
+CMD ["python3", "manage.py startbot", "0:8078"]

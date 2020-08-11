@@ -8,8 +8,9 @@ from django.db import IntegrityError
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 from Bot.models import Client, Site
+from env import BOT
 
-bot = telebot.TeleBot('1266535504:AAFrmvuiGMrIowTsCeswknLfASwpHHLnDL0')
+bot = telebot.TeleBot(BOT)
 
 regex = re.compile(
     r'^(?:http|ftp)s?://'  # http:// or https://
